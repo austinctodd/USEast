@@ -1,0 +1,7 @@
+netcdf test {
+dimensions:
+	x = 50 ;
+	y = 100 ;
+variables:
+	float var(x, y) ;
+}

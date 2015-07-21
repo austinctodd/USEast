@@ -1,0 +1,219 @@
+#===============================================================================
+#
+# SCRIPT :  avg_thermocline_age.py
+#
+# PURPOSE : Ingest input data from US East water age model and calculate the
+#           thermocline depth at each time. Then, average the water age above
+#           and below the depth.  Or should I just output the depths/indexes?
+#
+# METHOD :
+#
+# HISTORY : Created by Austin Todd on 26 JANUARY 2015.
+#
+#===============================================================================
+
+#-------------------------------------------------------------------------------
+# Define all required libraries, routines, and modules
+#-------------------------------------------------------------------------------
+import numpy as np
+import netCDF4
+import matplotlib.pyplot as plt
+import sys
+import mpl_toolkits.basemap
+import os
+#import pyroms
+sys.path.append('/Users/actodd/MYPYTHON/seawater/')
+import seawater as sw
+
+#-------------------------------------------------------------------------------
+# Define all required sub-libraries, sub-routines, and sub-modules
+#-------------------------------------------------------------------------------
+from netCDF4 import Dataset
+from mpl_toolkits.basemap import Basemap
+from matplotlib import cm
+#from pyroms.depths import nc_depths
+
+#--------------------------------------------------------------------------
+# Routine for calculating depths at rho points
+def depths_rho(h,zeta,s_r,Cs_r,hc):
+  for k in range(0,len(s_r)):
+    z0=(hc*s_r[k]+Cs_r[k]*h)/(hc+h);
+    z[k,:,:]=zeta+(zeta+h)*z0;
+  return z
+#  endfor
+#--------------------------------------------------------------------------
+
+#--------------------------------------------------------------------------
+# Routine for calculating depths at u points
+def depths_u(h,zeta,s_r,Cs_r,hc):
+  M=len(h)
+  L=len(h[0])
+  hu=   0.5*(   h[0:M-1,1:L-1]+   h[0:M-1,0:L-2]);
+  zetau=0.5*(zeta[0:M-1,1:L-1]+zeta[0:M-1,0:L-2])
+  
+  # Loop through each depth layer
+  for k in range(0,len(s_r)):
+    z0=(hc*s_r[k]+Cs_r[k]*hu)/(hc+hu);
+    z[k,:,:]=zetau+(zetau+hu)*z0;
+  #  endfor
+  
+  del hu
+  del zetau
+  return z
+#--------------------------------------------------------------------------
+
+#--------------------------------------------------------------------------
+# Routine for calculating depths at v points
+def depths_v(h,zeta,s_r,Cs_r,hc):
+  M=len(h)
+  L=len(h[0])
+  hv=   0.5*(   h[1:M-1,0:L-1]+   h[0:M-2,0:L-1]);
+  zetav=0.5*(zeta[1:M-1,0:L-1]+zeta[0:M-2,0:L-1])
+  
+  # Loop through all layers
+  for k in range(0,len(s_r)):
+    z0=(hc*s_r[k]+Cs_r[k]*hv)/(hc+hv);
+    z[k,:,:]=zetav+(zetav+hv)*z0;
+  #  endfor
+  del hv
+  del zetav
+  return z
+#--------------------------------------------------------------------------
+
+#--------------------------------------------------------------------------
+# Routine for calculating depths at w points
+def depths_w(h,zeta,s_w,Cs_w,hc):
+  for k in range(0,len(s_w)):
+    z0=(hc*s_w[k]+Cs_w[k]*h)/(hc+h);
+    zw[k,:,:]=zeta+(zeta+h)*z0;
+  return zw
+#  endfor
+#--------------------------------------------------------------------------
+
+#-------------------------------------------------------------------------------
+# Print message to screen
+#-------------------------------------------------------------------------------
+#print "----------------------------------------------------------------------"
+#print " RUNNING: Script plot_age_panels.py"
+#print "----------------------------------------------------------------------"
+#print ""
+
+################################################################################
+#                                                                              #
+#                            User Defined Variables                            #
+#                                                                              #
+input_file = '/Volumes/Black_box/Data/USeast-age/output/clim/averages/'+\
+             'avg_3hrly.nc'
+grid_file  = '/Volumes/Black_box/Data/USeast/Data/grd/USeast-grid.nc'
+outpu_file = '/Volumes/Black_box/Data/PLOTS/USeast-age/age/test.png'
+#                                                                              #
+################################################################################
+
+#-------------------------------------------------------------------------------
+# Open grid file and read in variables
+#-------------------------------------------------------------------------------
+grid_data=Dataset(grid_file,mode='r')
+mask=grid_data.variables['mask_rho' ][:,:]#0:401-25]
+lon =grid_data.variables['lon_rho'  ][:,:]#0:401-25]
+lat =grid_data.variables['lat_rho'  ][:,:]#0:401-25]
+h   =grid_data.variables['h'        ][:,:]#0:401-25]
+grid_data.close()
+
+hc=200.
+
+input_data=Dataset(input_file,mode='r')
+s_r =input_data.variables['s_rho'][:]
+s_w =input_data.variables['s_w'  ][:]
+Cs_r=input_data.variables['Cs_r' ][:]
+Cs_w=input_data.variables['Cs_w' ][:]
+
+L=len(input_data.dimensions['xi_rho' ])
+M=len(input_data.dimensions['eta_rho'])
+N=len(input_data.dimensions['s_rho'  ])
+
+#--------------------------------------------------------------------------
+# Loop through the water age output to calculate thermocline depth
+#--------------------------------------------------------------------------
+for tdim in range(0,1):#len(input_data.dimensions['ocean_time']-1)):
+
+#  print 'Time : %04i' % tdim
+
+  #------------------------------------------------------------------------
+  # Load in the SSH, Temp, and Salt to calculate layer & thermocline depths
+  #------------------------------------------------------------------------
+  zeta=input_data.variables['zeta'][tdim,:,:]
+  temp=input_data.variables['temp'][tdim,:,:,:]
+  salt=input_data.variables['salt'][tdim,:,:,:]
+
+  #------------------------------------------------------------------------
+  # Calculate depths of each rho layer
+  #------------------------------------------------------------------------
+  z  = np.zeros(shape=(N  ,M,L))
+  zw = np.zeros(shape=(N+1,M,L))
+  z  = depths_rho(h,zeta,s_r,Cs_r,hc)
+  z  = z[::-1,:,:]
+  zw = depths_w(  h,zeta,s_w,Cs_w,hc)
+  z  = z[::-1,:,:]
+  Hz = zw[1:N,:,:]-zw[0:N-1,:,:]
+
+  #------------------------------------------------------------------------
+  # Calculate various seawater properties
+  #------------------------------------------------------------------------
+  pres=sw.pres(z*-1,lat)
+  dens=sw.dens(salt,temp,pres)-1000.
+
+  #------------------------------------------------------------------------
+  # Find layer with max dT/d(sigma)
+  #------------------------------------------------------------------------
+  dT=np.zeros(shape=(N-1))
+  for i in range(0,M):
+    for j in range(0,L):
+      
+      #--------------------------------------------------------------------
+      # Make sure cell is over the water
+      #--------------------------------------------------------------------
+      if mask[i,j]>0:
+        #dTdZ = abs(temp[1:N-1,i,j]-temp[0:N-2,i,j])/abs(z[1:N-1,i,j]-z[0:N-2,i,j])
+        drdZ = abs(dens[1:N-1,i,j]-dens[0:N-2,i,j])/abs(z[1:N-1,i,j]-z[0:N-2,i,j])
+        #dT   = temp[35,i,j]-temp[: ,i,j]
+        #d_rho= dens[: ,i,j]-dens[35,i,j]
+        #dT   = np.where(dT    >= 0.500)[0]
+        #d_rho= np.where(d_rho >= 0.125)[0]
+        
+        #--------------------------------------------------------------------
+        # Test to see if ML reaches bottom or not (temperature)
+        #--------------------------------------------------------------------
+        #if (len(dT)>0):
+        #  dT_ind=dT[len(dT)-1]
+        #else:
+        #  dT_ind=0
+        #--------------------------------------------------------------------
+        # Test to see if ML reaches bottom or not (density)
+        #--------------------------------------------------------------------
+        #if (len(d_rho)>0):
+        #  d_rho_ind=d_rho[len(d_rho)-1]
+        #else:
+        #  d_rho_ind=0
+    
+        #dTdZ_ind=np.argmax(dTdZ)
+        drdZ_ind=np.argmax(drdZ)
+      #--------------------------------------------------------------------
+      # Cell is over land
+      #--------------------------------------------------------------------
+      else:
+        #dT_ind   =35
+        #d_rho_ind=35
+        #dTdZ_ind =35
+        drdZ_ind =35
+      print '%03d %03d %12.5f %12.5f %12.5f %12.5f' % (i,j,z[dT_ind,i,j],\
+                                                           z[d_rho_ind,i,j],\
+                                                           z[dTdZ_ind,i,j],\
+                                                           z[drdZ_ind,i,j])
+
+
+input_data.close()
+
+
+
+
+
