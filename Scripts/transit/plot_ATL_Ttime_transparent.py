@@ -83,6 +83,7 @@ rtime_data=Dataset(rtime_file,mode='r')
 #-------------------------------------------------------------------------------
 # Mask the age variables to the shelf
 #-------------------------------------------------------------------------------
+scope[:,401-25:]=0
 scope2=scope+hmask
 scope=1-scope
 hmask=1-hmask
@@ -91,7 +92,7 @@ cm.gist_ncar.set_bad('white',alpha=0.0)
 
 day_count=[0,31,28,31,30,31,30,31,31,30,31,30,31]
 
-for i in range(0,12):
+for i in range(0,1):
 
   #-----------------------------------------------------------------------------
   # Load and average data for each season
@@ -103,6 +104,8 @@ for i in range(0,12):
   rtime=np.nanmean(rtime_data.variables['GOM_shelf_rtime'][stind:enind,:,:],axis=0)
   
   ttime=age+rtime
+  ttime[:,401-25:]=np.nan
+  cm.gist_ncar.set_bad('white',alpha=0.0)
   
   #-----------------------------------------------------------------------------
   # Mask the age variables to the shelf
@@ -110,7 +113,7 @@ for i in range(0,12):
   ttime=np.ma.array(ttime,mask=scope)
   
   # Plot Data
-  if i==0:
+  if i==1:
     #-----------------------------------------------------------------------------
     # Plot Data using Basemap mercator projection
     #-----------------------------------------------------------------------------
