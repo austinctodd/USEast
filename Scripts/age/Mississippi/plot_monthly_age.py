@@ -14,7 +14,7 @@
 input_file = '/Volumes/Black_box/Data/USeast-age/output/clim/averages/'+\
              'age_pycnocline_avg.nc'
 GOM_file   = '/Volumes/Black_box/Data/USeast/Data/grd/grid_GOM_shelf_scope.nc'
-plot_dir   = '/Volumes/Black_box/Data/PLOTS/USeast-age/age/pcline/ATL/'
+plot_dir   = '/Volumes/Black_box/Data/PLOTS/USeast-age/age/pcline/Mississippi/'
 
 #-------------------------------------------------------------------------------
 # Print message to user
@@ -93,7 +93,7 @@ for tdim in range(0,12):
   # Load and average data for each season
   #-----------------------------------------------------------------------------
   print 'Plotting data for Month %2d' % (tdim+1)
-  age   =np.nanmean(input_data.variables['mean_age_03'][stind:enind,:,:],axis=0)
+  age   =np.nanmean(input_data.variables['mean_age_02'][stind:enind,:,:],axis=0)
   
   #-----------------------------------------------------------------------------
   # Mask the values over land
@@ -105,8 +105,8 @@ for tdim in range(0,12):
   #-----------------------------------------------------------------------------
   print 'Plotting data.'
   plt.clf()
-  m=Basemap(projection='merc',llcrnrlat=26.5,urcrnrlat=46,\
-          llcrnrlon=-81.75,urcrnrlon=lon[481,376],lat_ts=20,resolution='f')
+  m=Basemap(projection='merc',llcrnrlat=18,urcrnrlat=31,\
+            llcrnrlon=-98.5,urcrnrlon=-80,lat_ts=20,resolution='f')
   
   # Draw a think border around the whole map
   m.drawmapboundary(linewidth=3)
@@ -131,12 +131,10 @@ for tdim in range(0,12):
   m.fillcontinents(color='grey')
   
   # Add Colorbar
-  #clabels=np.array([0,0.25,0.5,0.75,1,1.25,1.5,1.75,2,2.25,2.5])
   clabels=np.array([0,0.5,1,1.5,2,2.5,3])
   clabels=clabels*365.25
-  cbar = m.colorbar(cs, location='right',ticks=clabels,extend='max')
-  #  cbar.ax.set_yticklabels([0,0.25,0.5,0.75,1,1.25,1.5,1.75,2,2.25,2.5])
-  cbar.ax.set_yticklabels([0,0.5,1,1.5,2,2.5,3])
+  cbar = m.colorbar(cs, location='bottom',pad="4%",ticks=clabels,extend='max')
+  cbar.ax.set_xticklabels([0,0.5,1,1.5,2,2.5,3])
   cbar.set_label('Mean age (years)')
   
   # Add Title

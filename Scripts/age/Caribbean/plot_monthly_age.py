@@ -14,7 +14,7 @@
 input_file = '/Volumes/Black_box/Data/USeast-age/output/clim/averages/'+\
              'age_pycnocline_avg.nc'
 GOM_file   = '/Volumes/Black_box/Data/USeast/Data/grd/grid_GOM_shelf_scope.nc'
-plot_dir   = '/Volumes/Black_box/Data/PLOTS/USeast-age/age/pcline/ATL/'
+plot_dir   = '/Volumes/Black_box/Data/PLOTS/USeast-age/age/pcline/Caribbean/'
 
 #-------------------------------------------------------------------------------
 # Print message to user
@@ -105,8 +105,8 @@ for tdim in range(0,12):
   #-----------------------------------------------------------------------------
   print 'Plotting data.'
   plt.clf()
-  m=Basemap(projection='merc',llcrnrlat=26.5,urcrnrlat=46,\
-          llcrnrlon=-81.75,urcrnrlon=lon[481,376],lat_ts=20,resolution='f')
+  m=Basemap(projection='merc',llcrnrlat=lat[0,0],urcrnrlat=27.5,\
+          llcrnrlon=-89,urcrnrlon=lon[481,376],lat_ts=20,resolution='f')
   
   # Draw a think border around the whole map
   m.drawmapboundary(linewidth=3)
@@ -119,9 +119,9 @@ for tdim in range(0,12):
   cn = m.contour(   xi,yi,age,[182.625,365.25,730.5,913.125],colors='0.5',linewidth=1.0)
 
   # Add Grid Lines
-  m.drawparallels(np.arange(0.,90.,10.), labels=[1,0,0,0],\
+  m.drawparallels(np.arange(0.,90.,5.), labels=[1,0,0,0],\
                   fontsize=10, linewidth=0.75, color='.5')
-  m.drawmeridians(np.arange(-105.,-35.,10.), labels=[0,0,0,1],\
+  m.drawmeridians(np.arange(-105.,-35.,5.), labels=[0,0,0,1],\
                   fontsize=10, linewidth=0.75, color='.5')
 
   # Add Coastlines, States, and Country Boundaries

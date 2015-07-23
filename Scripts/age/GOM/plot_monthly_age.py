@@ -113,7 +113,7 @@ for tdim in range(0,12):
 
   # Plot Data
   xi, yi = m(lon2,lat2)
-  cs = m.pcolormesh(xi,yi,age,cmap=cm.gist_ncar,vmin=0, vmax = 365.25*2.5)
+  cs = m.pcolormesh(xi,yi,age,cmap=cm.gist_ncar,vmin=0, vmax = 365.25*3)
   xi, yi = m(lon,lat)
   #  cM = m.contour(   xi,yi,scope2,[1,1],colors='k',linewidth=2.0)
   cn = m.contour(   xi,yi,age,[182.625,365.25,730.5,913.125],colors='0.5',linewidth=1.0)
@@ -131,10 +131,10 @@ for tdim in range(0,12):
   m.fillcontinents(color='grey')
   
   # Add Colorbar
-  clabels=np.array([0,0.25,0.5,0.75,1,1.25,1.5,1.75,2,2.25,2.5])
+  clabels=np.array([0,0.5,1,1.5,2,2.5,3])
   clabels=clabels*365.25
-  cbar = m.colorbar(cs, location='right',ticks=clabels,extend='max')
-  cbar.ax.set_yticklabels([0,0.25,0.5,0.75,1,1.25,1.5,1.75,2,2.25,2.5])
+  cbar = m.colorbar(cs, location='bottom',pad="4%",ticks=clabels,extend='max')
+  cbar.ax.set_xticklabels([0,0.5,1,1.5,2,2.5,3])
   cbar.set_label('Mean age (years)')
   
   # Add Title
