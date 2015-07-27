@@ -16,7 +16,7 @@ GOM_file = '/Volumes/Black_box/Data/USeast/Data/grd/grid_GOM_shelf_scope.nc'
 fwd_file = '/Volumes/Black_box/Data/USeast-age/output/clim/averages/'+\
            'avg_3hrly.nc'
 shelf_pts= 'shelf_points.txt'
-output_dir='/Volumes/Black_box/Data/USeast-age/analysis/cross_shelf_fluxes.nc'
+output_file='/Volumes/Black_box/Data/USeast-age/analysis/cross_shelf_fluxes.nc'
 
 #-------------------------------------------------------------------------------
 # Define all required libraries, routines, and modules
@@ -128,14 +128,12 @@ for i in range (0,len(shelf_i)):
 #-------------------------------------------------------------------------------
 # Write data to file
 #-------------------------------------------------------------------------------
-output_file=output_dir+'cross_shelf_fluxes.nc'
-
 print " "
 print "Creating output file: %s" % output_file
 print " "
 
 output_data=Dataset(output_file,mode='w',format='NETCDF4')
-output_data.createDimension('ocean_time',lon.shape[1])
+output_data.createDimension('ocean_time',uflx.shape[0])
 output_data.createDimension('s_rho'   ,len(s_r))
 output_data.createDimension('shelf_pts',len(shelf_i))
 

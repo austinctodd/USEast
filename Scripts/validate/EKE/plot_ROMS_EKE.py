@@ -67,7 +67,7 @@ lat2=latp-0.5*(latp[2,1]-latp[1,1])
 print 'Ingesting data from file %s ...' % (input_file)
 input_data=Dataset(input_file,mode='r')
 eke  = input_data.variables['eke'      ][:]
-ekep = input_data.variables['eke_prime'][:]
+#ekep = input_data.variables['eke_prime'][:]
 input_data.close()
 
 #-------------------------------------------------------------------------------
@@ -96,7 +96,7 @@ m.drawmapboundary(linewidth=3)
 
 # Plot Data
 xi, yi = m(lon2,lat2)
-cs = m.pcolormesh(xi,yi,np.log10(ekep),cmap=cm.gist_ncar,vmin=-2.5, vmax = 0)
+cs = m.pcolormesh(xi,yi,np.log10(eke),cmap=cm.gist_ncar,vmin=-2.5, vmax = 0)
 
 # Add Grid Lines
 m.drawparallels(np.arange(0.,90.,10.), labels=[1,0,0,0],\
@@ -119,7 +119,7 @@ cbar = m.colorbar(cs, location='bottom', pad="4%",ticks=clabels,extend='both')
 cbar.set_label(r'$\log$'+'(EKE) (m'+r'$^2$'+'/s'+r'$^2$'+')')
 
 # Save figure to file
-plot_file=plot_dir+'ROMS_EKE.png'
+plot_file=plot_dir+'ROMS_EKE3.png'
 print 'Saving figure to file %s ' % plot_file
 plt.savefig(plot_file,dpi=150,bbox_inches='tight')
 

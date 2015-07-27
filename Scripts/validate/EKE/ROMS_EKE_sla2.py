@@ -44,7 +44,7 @@ infile2 = '/Volumes/Backup2/Data/USeast-age/fwdrun/part2/useast_his.nc'
 infile3 = '/Volumes/Black_box/Data/USeast-age/output/clim/averages/'+\
           'mean_vels.nc'
 outfile = '/Volumes/Black_box/Data/USeast-age/output/clim/analysis/'+\
-          'eke_sla_filtered40hrs.nc'
+          'eke_sla_filtered2.nc'
 #                                                                              #
 ################################################################################
 
@@ -133,7 +133,7 @@ eke       = np.zeros(shape=(M-1,N-1))
 #--------------------------------------------------------------------------
 # 6th Order Butterworth filter w cutoff frequency of 100 hrs @ 3 hrly data
 #--------------------------------------------------------------------------
-B,A=signal.butter(6,3/20,output='ba');
+B,A=signal.butter(6,3/50,output='ba');
 
 #------------------------------------------------------------------------
 # Initialize some arrays
@@ -165,11 +165,11 @@ for i in range(0,lon.shape[0]-1):
       zeta1[0:2922*2]       =indata1.variables['zeta'][0:2922*2  ,i,j]
       zeta1[2922*2-1:2922*6]=indata2.variables['zeta'][0:2922*4+1,i,j]
 
-      # Filter the SSH over the entire record
-      zeta1f=signal.filtfilt(B,A,zeta1)
-
       # Find difference from mean
-      cff1 = zeta1f-indata3.variables['mean_zeta'][i,j]
+      cff1 = zeta1-indata3.variables['mean_zeta'][i,j]
+
+      # Filter the SSH over the entire record
+      zeta1f=signal.filtfilt(B,A,cff1)
 
       #----------------------------------------------------------------------
       # Load zeta at i,j+1
@@ -177,41 +177,41 @@ for i in range(0,lon.shape[0]-1):
       zeta2[0:2922*2]       =indata1.variables['zeta'][0:2922*2  ,i,j+1]
       zeta2[2922*2-1:2922*6]=indata2.variables['zeta'][0:2922*4+1,i,j+1]
 
-      # Filter the SSH over the entire record
-      zeta2f=signal.filtfilt(B,A,zeta2)
-
       # Find difference from mean
-      cff2 = zeta2f-indata3.variables['mean_zeta'][i,j+1]
+      cff2 = zeta2-indata3.variables['mean_zeta'][i,j+1]
+
+      # Filter the SSH over the entire record
+      zeta2f=signal.filtfilt(B,A,cff2)
  
       #----------------------------------------------------------------------
       # Load the variables at i+1,j
       #----------------------------------------------------------------------
       zeta3[0:2922*2]       =indata1.variables['zeta'][0:2922*2  ,i+1,j]
       zeta3[2922*2-1:2922*6]=indata2.variables['zeta'][0:2922*4+1,i+1,j]
+      
+      # Find difference from mean
+      cff3 = zeta3-indata3.variables['mean_zeta'][i+1,j]
 
       # Filter the SSH over the entire record
-      zeta3f=signal.filtfilt(B,A,zeta3)
-
-      # Find difference from mean
-      cff3 = zeta3f-indata3.variables['mean_zeta'][i+1,j]
+      zeta3f=signal.filtfilt(B,A,cff3)
 
       #----------------------------------------------------------------------
       # Load the variables at i+1,j+1
       #----------------------------------------------------------------------
       zeta4[0:2922*2]       =indata1.variables['zeta'][0:2922*2  ,i+1,j+1]
       zeta4[2922*2-1:2922*6]=indata2.variables['zeta'][0:2922*4+1,i+1,j+1]
+      
+      # Find difference from mean
+      cff4 = zeta4-indata3.variables['mean_zeta'][i+1,j+1]
     
       # Filter the SSH over the entire record
-      zeta4f=signal.filtfilt(B,A,zeta4)
- 
-      # Find difference from mean
-      cff4 = zeta4f-indata3.variables['mean_zeta'][i+1,j+1]
+      zeta4f=signal.filtfilt(B,A,cff4)
 
       #----------------------------------------------------------------------
       # Calculate ug and vg at psi-points
       #----------------------------------------------------------------------
-      ug = -(g/2.0)*((cff3-cff1)/(fy[i,j]*dy[i,j])+(cff4-cff2)/(fy[i,j+1]*dy[i,j+1]))
-      vg=   (g/2.0)*((cff2-cff1)/(fx[i,j]*dx[i,j])+(cff4-cff3)/(fx[i+1,j]*dx[i+1,j]))
+      ug = -(g/2.0)*((zeta3f-zeta1f)/(fy[i,j]*dy[i,j])+(zeta4f-zeta2f)/(fy[i,j+1]*dy[i,j+1]))
+      vg=   (g/2.0)*((zeta2f-zeta1f)/(fx[i,j]*dx[i,j])+(zeta4f-zeta3f)/(fx[i+1,j]*dx[i+1,j]))
 
       # Now calculate the mean over each day
       eke[i,j]=np.nanmean(0.5*((ug**2) + (vg**2)))
