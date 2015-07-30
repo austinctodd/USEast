@@ -44,7 +44,7 @@ infile2 = '/Volumes/Backup2/Data/USeast-age/fwdrun/part2/useast_his.nc'
 infile3 = '/Volumes/Black_box/Data/USeast-age/output/clim/averages/'+\
           'mean_vels.nc'
 outfile = '/Volumes/Black_box/Data/USeast-age/output/clim/analysis/'+\
-          'eke_sla_filtered40hrs.nc'
+          'eke_sla_filtered24hrs.nc'
 #                                                                              #
 ################################################################################
 
@@ -133,7 +133,7 @@ eke       = np.zeros(shape=(M-1,N-1))
 #--------------------------------------------------------------------------
 # 6th Order Butterworth filter w cutoff frequency of 100 hrs @ 3 hrly data
 #--------------------------------------------------------------------------
-B,A=signal.butter(6,3/20,output='ba');
+B,A=signal.butter(6,3.0/12.0,output='ba');
 
 #------------------------------------------------------------------------
 # Initialize some arrays
@@ -166,10 +166,8 @@ for i in range(0,lon.shape[0]-1):
       zeta1[2922*2-1:2922*6]=indata2.variables['zeta'][0:2922*4+1,i,j]
 
       # Filter the SSH over the entire record
-      zeta1f=signal.filtfilt(B,A,zeta1)
-
-      # Find difference from mean
-      cff1 = zeta1f-indata3.variables['mean_zeta'][i,j]
+      zeta1f=signal.filtfilt(B,A,zeta1-indata3.variables['mean_zeta'][i,j])
+      cff1=zeta1f[4:2922*6-4]
 
       #----------------------------------------------------------------------
       # Load zeta at i,j+1
@@ -178,11 +176,9 @@ for i in range(0,lon.shape[0]-1):
       zeta2[2922*2-1:2922*6]=indata2.variables['zeta'][0:2922*4+1,i,j+1]
 
       # Filter the SSH over the entire record
-      zeta2f=signal.filtfilt(B,A,zeta2)
+      zeta2f=signal.filtfilt(B,A,zeta2-indata3.variables['mean_zeta'][i,j+1])
+      cff2=zeta2f[4:2922*6-4]
 
-      # Find difference from mean
-      cff2 = zeta2f-indata3.variables['mean_zeta'][i,j+1]
- 
       #----------------------------------------------------------------------
       # Load the variables at i+1,j
       #----------------------------------------------------------------------
@@ -190,10 +186,8 @@ for i in range(0,lon.shape[0]-1):
       zeta3[2922*2-1:2922*6]=indata2.variables['zeta'][0:2922*4+1,i+1,j]
 
       # Filter the SSH over the entire record
-      zeta3f=signal.filtfilt(B,A,zeta3)
-
-      # Find difference from mean
-      cff3 = zeta3f-indata3.variables['mean_zeta'][i+1,j]
+      zeta3f=signal.filtfilt(B,A,zeta3-indata3.variables['mean_zeta'][i+1,j])
+      cff3=zeta3f[4:2922*6-4]
 
       #----------------------------------------------------------------------
       # Load the variables at i+1,j+1
@@ -202,10 +196,8 @@ for i in range(0,lon.shape[0]-1):
       zeta4[2922*2-1:2922*6]=indata2.variables['zeta'][0:2922*4+1,i+1,j+1]
     
       # Filter the SSH over the entire record
-      zeta4f=signal.filtfilt(B,A,zeta4)
- 
-      # Find difference from mean
-      cff4 = zeta4f-indata3.variables['mean_zeta'][i+1,j+1]
+      zeta4f=signal.filtfilt(B,A,zeta4-indata3.variables['mean_zeta'][i+1,j+1])
+      cff4=zeta4f[4:2922*6-4]
 
       #----------------------------------------------------------------------
       # Calculate ug and vg at psi-points

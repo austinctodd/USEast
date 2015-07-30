@@ -10,7 +10,7 @@
 #
 #===============================================================================
 
-input_file = '/Volumes/Black_box/Data/USeast-age/output/clim/analysis/eke_sla.nc'
+input_file = '/Volumes/Black_box/Data/USeast-age/output/clim/analysis/eke_sla_filtered24hrs.nc'
 plot_dir   = '/Volumes/Black_box/Data/PLOTS/USeast-age/validate/'
 GOM_file   = '/Volumes/Black_box/Data/USeast/Data/grd/grid_GOM_shelf_scope.nc'
 
@@ -119,7 +119,7 @@ cbar = m.colorbar(cs, location='bottom', pad="4%",ticks=clabels,extend='both')
 cbar.set_label(r'$\log$'+'(EKE) (m'+r'$^2$'+'/s'+r'$^2$'+')')
 
 # Save figure to file
-plot_file=plot_dir+'ROMS_EKE3.png'
+plot_file=plot_dir+'ROMS_EKE_24hrs.png'
 print 'Saving figure to file %s ' % plot_file
 plt.savefig(plot_file,dpi=150,bbox_inches='tight')
 
